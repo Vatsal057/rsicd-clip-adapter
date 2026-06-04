@@ -1,0 +1,36 @@
+# Tiny smoke-test config: 1 epoch, 20 warmup steps, tiny batches.
+# Use only to verify the training loop runs end-to-end. NOT for the real run.
+model:
+  clip_model_name: "ViT-B-32"
+  clip_pretrained:  "openai"
+  hidden_dim:       64
+  dropout:          0.1
+  adapter_on_image: true
+  adapter_on_text:  true
+  use_residual:     true
+  learn_logit_scale: true
+
+training:
+  batch_size:       8
+  num_epochs:       1
+  learning_rate:    1.0e-4
+  weight_decay:     1.0e-4
+  warmup_epochs:    0
+  grad_clip_norm:   1.0
+  seed:             42
+  num_workers:      0
+
+data:
+  splits_dir:   "data/splits"
+  images_dir:   "data/raw/RSICD_images"
+
+paths:
+  checkpoint_dir: "results/checkpoints"
+  metrics_dir:    "results/metrics"
+  log_every:      5
+  eval_every:     1
+  save_best_name: "smoke_adapter_best.pt"
+
+eval:
+  image_batch_size:   16
+  caption_batch_size: 32

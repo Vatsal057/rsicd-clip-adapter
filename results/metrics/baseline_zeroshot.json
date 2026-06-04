@@ -1,0 +1,17 @@
+{
+  "split": "test",
+  "text_to_image": {
+    "R@1": 5.95,
+    "R@5": 18.21,
+    "R@10": 28.64
+  },
+  "image_to_text": {
+    "R@1": 4.39,
+    "R@5": 16.19,
+    "R@10": 25.07
+  },
+  "model": "zero_shot_clip",
+  "clip_model": "ViT-B-32",
+  "trainable_params": 0,
+  "device": "mps"
+}

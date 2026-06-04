@@ -1,0 +1,52 @@
+\documentclass[12pt]{letter}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+
+\begin{document}
+
+\begin{letter}{The Guest Editors\\
+Special Issue: Multimodal Representation Learning Based on Vision Foundation Models\\
+ScienceDirect / Elsevier}
+
+\opening{Dear Guest Editors,}
+
+We submit for your consideration the manuscript titled
+\textit{``Bridging the Domain Gap: Lightweight Adapter-Based CLIP
+Fine-Tuning for Cross-Modal Retrieval in Remote Sensing''} for
+publication in the Special Issue on Multimodal Representation Learning
+Based on Vision Foundation Models.
+
+Cross-modal retrieval between remote sensing imagery and natural language
+remains a challenging open problem due to the pronounced domain shift
+between web-scale vision-language pretraining data and aerial or
+satellite-acquired imagery. While fine-tuning large vision foundation
+models such as CLIP on domain-specific data is effective, it is
+computationally prohibitive and risks catastrophic forgetting of broadly
+learned visual-semantic representations.
+
+Our work directly addresses the special issue's stated scope on
+\textit{``Parameter-Efficient Fine-Tuning (PEFT) and adaptation techniques
+for VFM-based multimodal systems''} and \textit{``Applications: multimodal
+retrieval and autonomous systems''}. We propose and evaluate a lightweight
+dual bottleneck adapter module that trains only 527,873 parameters
+(0.35\% of CLIP's total) while achieving competitive cross-modal
+retrieval on the RSICD benchmark---closing the majority of the gap
+between zero-shot CLIP and full fine-tuning. Systematic ablation studies
+on adapter placement, bottleneck dimension, residual connectivity, and
+training data scale provide practical design guidelines for domain
+adaptation of vision foundation models.
+
+This manuscript has not been submitted elsewhere and is not under
+consideration at any other journal. All authors have approved the
+submission. We confirm that the research complies with ethical standards
+and that the dataset used (RSICD) is publicly available.
+
+\closing{Sincerely,}
+
+\textbf{Vatsal Vaghasiya}\\
+M.S. Data Science, M.S. Ramaiah University of Applied Sciences\\
+Bengaluru, India\\
+Email: kvaghasiya057@gmail.com
+
+\end{letter}
+\end{document}

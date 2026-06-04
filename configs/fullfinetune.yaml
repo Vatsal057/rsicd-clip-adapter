@@ -1,0 +1,32 @@
+# Full fine-tune baseline configuration.
+# All CLIP parameters are trainable (no adapters).
+
+model:
+  clip_model_name: "ViT-B-32"
+  clip_pretrained:  "openai"
+  freeze_clip:      false         # KEY: unfreeze everything
+
+training:
+  batch_size:    32               # Smaller batch (more VRAM, more optimizer states)
+  num_epochs:    10
+  learning_rate: 1.0e-5           # 10x lower than adapter; preserve pretrained features
+  weight_decay:  1.0e-4
+  warmup_epochs: 1
+  grad_clip_norm: 1.0
+  seed:          42
+  num_workers:   4
+
+data:
+  splits_dir:   "data/splits"
+  images_dir:   "data/raw/RSICD_images"
+
+paths:
+  checkpoint_dir: "results/checkpoints"
+  metrics_dir:    "results/metrics"
+  log_every:      50
+  eval_every:     1
+  save_best_name: "fullfinetune_best.pt"
+
+eval:
+  image_batch_size:   64
+  caption_batch_size: 256

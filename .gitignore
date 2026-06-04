@@ -1,0 +1,17 @@
+data/raw/
+results/checkpoints/
+results/figures/
+archive/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
+.DS_Store
+*.log
+

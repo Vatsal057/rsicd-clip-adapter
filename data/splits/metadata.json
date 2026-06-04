@@ -1,0 +1,11 @@
+{
+  "seed": 42,
+  "train_ratio": 0.8,
+  "val_ratio": 0.1,
+  "test_ratio": 0.1,
+  "n_train_images": 8734,
+  "n_val_images": 1094,
+  "n_test_images": 1093,
+  "used_predefined_splits": true,
+  "source_json": "data/raw/dataset_rsicd.json"
+}

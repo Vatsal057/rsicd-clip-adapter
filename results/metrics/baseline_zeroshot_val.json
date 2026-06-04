@@ -1,0 +1,15 @@
+{
+  "split": "val",
+  "text_to_image": {
+    "R@1": 2.65,
+    "R@5": 12.34,
+    "R@10": 22.3
+  },
+  "image_to_text": {
+    "R@1": 2.93,
+    "R@5": 11.06,
+    "R@10": 18.92
+  },
+  "model": "zero_shot_clip",
+  "device": "mps"
+}
