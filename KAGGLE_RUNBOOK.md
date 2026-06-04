@@ -30,13 +30,14 @@ change `num_epochs` in the train cell.
 1. Go to https://www.kaggle.com/code → **+ New Notebook** → **File → Import Notebook**
 2. Upload `notebooks/kaggle_s1_adapter_start.ipynb`
 3. In the right panel → **+ Add data** → search `thedevastator/rsicd-image-caption-dataset` → **Add**
-4. Settings (top right): **Accelerator = GPU P100 or T4**, **Internet = ON**
-5. Click **Run All** (or step through)
-6. When the last cell finishes:
+4. **Verify the path**: cell 2 (sanity check) will look for the dataset at exactly `/kaggle/input/datasets/thedevastator/rsicd-image-caption-dataset/`. If you attach it correctly, the cell prints `Using dataset: /kaggle/input/datasets/thedevastator/rsicd-image-caption-dataset` followed by the list of CSVs. If you see `ERROR: dataset not found at ...`, the dataset is not at the expected path — go back to step 3 and re-attach.
+5. Settings (top right): **Accelerator = GPU P100 or T4**, **Internet = ON**
+6. Click **Run All** (or step through)
+7. When the last cell finishes:
    - **Save Version** (top right) → make sure **Save Output** is **ON** → **Save**
    - Wait ~30 sec for the version to commit
    - Output tab at the bottom → **+ New Dataset** → name it `rsicd-adapter-s1` → **Create**
-7. Open `kaggle_s2_adapter_mid.ipynb` for session 2.
+8. Open `kaggle_s2_adapter_mid.ipynb` for session 2.
 
 The conversion in cell 3 takes ~5 minutes the first time, ~30 sec on re-runs (it's idempotent).
 Training takes ~45 min for 7 epochs. Total session 1: ~50 min.
