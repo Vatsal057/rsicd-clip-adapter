@@ -59,7 +59,13 @@ def build_model_from_config(model_cfg: dict, device: str) -> CLIPAdapterModel:
 
 def train(config_path: str = "configs/adapter_base.yaml",
           run_tag:     str = "adapter") -> dict:
-    """Run the training loop. Returns the final test results dict."""
+    """Run the training loop. Returns the final test results dict.
+
+    Supports resume: if config['training']['resume_from'] points to an
+    existing checkpoint, the model + optimizer + scheduler state is loaded
+    and training continues from `checkpoint.epoch + 1`. This is needed for
+    Kaggle (12 h session limit) and any other interrupted-run scenario.
+    """
     with open(config_path) as f:
         cfg = yaml.safe_load(f)
 
@@ -99,23 +105,53 @@ def train(config_path: str = "configs/adapter_base.yaml",
         lr           = cfg["training"]["learning_rate"],
         weight_decay = cfg["training"]["weight_decay"],
     )
-    total_steps   = max(1, len(train_loader) * cfg["training"]["num_epochs"])
-    warmup_steps  = len(train_loader) * cfg["training"]["warmup_epochs"]
-    scheduler     = get_warmup_cosine_scheduler(optimizer, warmup_steps, total_steps)
+    num_epochs      = cfg["training"]["num_epochs"]
+    total_steps     = max(1, len(train_loader) * num_epochs)
+    warmup_steps    = len(train_loader) * cfg["training"]["warmup_epochs"]
+    scheduler       = get_warmup_cosine_scheduler(optimizer, warmup_steps, total_steps)
+
+    # ── Resume from checkpoint (if configured) ─────────────────────────────
+    start_epoch   = 0
+    best_val_r1   = 0.0
+    history: list = []
+    history_path  = metrics_dir / f"training_history_{run_tag}.json"
+    resume_from   = cfg["training"].get("resume_from")
+
+    if resume_from and Path(resume_from).exists():
+        print(f"\nResuming from checkpoint: {resume_from}")
+        ckpt = torch.load(resume_from, map_location=device, weights_only=False)
+        # Checkpoint contains only trainable params; strict=False ignores the
+        # missing frozen CLIP backbone.
+        model.load_state_dict(ckpt["model_state_dict"], strict=False)
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
+        start_epoch = ckpt["epoch"]
+        best_val_r1 = ckpt.get("val_r1", 0.0)
+        # Advance the scheduler to the right point
+        for _ in range(start_epoch * len(train_loader)):
+            scheduler.step()
+        # Load existing history if present (so the curve stays continuous)
+        if history_path.exists():
+            with open(history_path) as f:
+                history = json.load(f)
+        print(f"  resumed at epoch {start_epoch}, best val R@1 so far: {best_val_r1:.2f}%")
+    elif resume_from:
+        print(f"\nresume_from={resume_from} does not exist; starting from scratch.")
 
     # ── Training state ──────────────────────────────────────────────────────
-    best_val_r1     = 0.0
-    history: list   = []
-    log_every       = cfg["paths"].get("log_every", 50)
-    eval_every      = cfg["paths"].get("eval_every", 1)
-    grad_clip_norm  = cfg["training"]["grad_clip_norm"]
-    num_epochs      = cfg["training"]["num_epochs"]
+    log_every      = cfg["paths"].get("log_every", 50)
+    eval_every     = cfg["paths"].get("eval_every", 1)
+    grad_clip_norm = cfg["training"]["grad_clip_norm"]
 
-    print(f"\nStarting training for {num_epochs} epochs...")
-    print(f"  total steps: {total_steps}, warmup: {warmup_steps}, "
-          f"peak LR: {cfg['training']['learning_rate']:.2e}\n")
+    if start_epoch >= num_epochs:
+        print(f"\nstart_epoch ({start_epoch}) >= num_epochs ({num_epochs}); "
+              f"skipping training. Run test evaluation only.")
+    else:
+        print(f"\nTraining epochs {start_epoch + 1} to {num_epochs} "
+              f"({num_epochs - start_epoch} remaining)...")
+        print(f"  total steps: {total_steps}, warmup: {warmup_steps}, "
+              f"peak LR: {cfg['training']['learning_rate']:.2e}\n")
 
-    for epoch in range(1, num_epochs + 1):
+    for epoch in range(start_epoch + 1, num_epochs + 1):
         model.train()
         epoch_loss = 0.0
         t0 = time.time()
@@ -158,13 +194,22 @@ def train(config_path: str = "configs/adapter_base.yaml",
 
             if val_r1 > best_val_r1:
                 best_val_r1 = val_r1
+                # Save ONLY the trainable parameters (adapters + logit_scale).
+                # The frozen CLIP backbone is ~150M params; we don't need to
+                # re-save it on every improvement. This keeps the checkpoint
+                # at ~2 MB instead of ~600 MB.
+                trainable_state = {
+                    name: param.detach().clone().cpu()
+                    for name, param in model.named_parameters()
+                    if param.requires_grad
+                }
                 torch.save({
-                    "epoch":            epoch,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                    "val_r1":           val_r1,
-                    "config":           cfg["model"],
-                    "timestamp":        time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "epoch":                  epoch,
+                    "model_state_dict":       trainable_state,
+                    "optimizer_state_dict":   optimizer.state_dict(),
+                    "val_r1":                 val_r1,
+                    "config":                 cfg["model"],
+                    "timestamp":              time.strftime("%Y-%m-%d %H:%M:%S"),
                 }, best_ckpt_path)
                 print(f"  *** New best val R@1 = {val_r1:.2f}% -> saved {best_ckpt_path.name} ***")
 

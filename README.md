@@ -69,7 +69,8 @@ This runs, in order:
 6. `06_qualitative.py` — paper figures (PDFs to `paper/figures/`)
 
 End-to-end runtime:
-- On **Google Colab T4**: ~30-40 GPU-hours (training is the bottleneck)
+- On **Kaggle (free, P100)**: ~30 GPU-hours ≈ 1 week of free quota — **recommended, no babysitting** (see `KAGGLE_RUNBOOK.md`)
+- On **Google Colab T4**: ~30-40 GPU-hours (training is the bottleneck; see `COLAB_RUNBOOK.md`)
 - On **Apple Silicon (MPS)**: ~6-8 hours for the adapter training; full fine-tune is impractical (>50 hours)
 
 For a quick smoke test (1 epoch, hidden_dim=64, batch=8, ~2 minutes on MPS):
@@ -82,12 +83,14 @@ python scripts/03_train_adapter.py configs/smoke_adapter.yaml smoke
 ```
 src/           — model, dataset, loss, training, evaluation, utilities
 scripts/       — 00..06 numbered runnable scripts
-configs/       — YAML experiment configurations
-results/       — metrics JSONs (committed), checkpoints, figures
+configs/       — YAML experiment configurations (set `resume_from` for Kaggle)
+results/       — metrics JSONs (committed), checkpoints (gitignored, 1.6 MB lite), figures
 paper/         — LaTeX source + paper figures
 notebooks/     — exploration + Colab quickstart + smoke tests
 days/          — per-day progress logs
 data/          — raw images (gitignored) + splits JSONs (committed)
+KAGGLE_RUNBOOK.md  — 5-session P100 runbook with checkpoint-resume procedure
+COLAB_RUNBOOK.md   — 4-cell Colab quickstart (alternative to Kaggle)
 ```
 
 ## Citation

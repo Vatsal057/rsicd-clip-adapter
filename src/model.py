@@ -161,15 +161,32 @@ class CLIPAdapterModel(nn.Module):
 
 def load_adapter_model(checkpoint_path: str,
                       device: str = "cpu",
-                      strict: bool = True) -> CLIPAdapterModel:
-    """Load a trained adapter model from a checkpoint saved by `train.py`."""
+                      strict: bool = False) -> CLIPAdapterModel:
+    """Load a trained adapter model from a checkpoint saved by `train.py`.
+
+    Checkpoints store ONLY the trainable parameters (~2 MB), so the
+    frozen CLIP backbone is reconstructed from `cfg["config"]` (the
+    model config dict that was saved alongside the state dict). The
+    reconstruction uses `open_clip.create_model_from_pretrained`,
+    which downloads CLIP weights from the standard cache.
+
+    `strict=False` is the default: missing keys (frozen CLIP weights) are
+    expected and ignored; unexpected keys would be a real bug.
+    """
     ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
     cfg  = ckpt["config"]
-    # Always set use_residual=True on construction; load_state_dict with
-    # strict=False handles the no-residual case.
     cfg.setdefault("use_residual", True)
     model = CLIPAdapterModel(**cfg)
-    model.load_state_dict(ckpt["model_state_dict"], strict=strict)
+    missing, unexpected = model.load_state_dict(ckpt["model_state_dict"], strict=strict)
+    if unexpected:
+        raise RuntimeError(
+            f"Unexpected keys in checkpoint (likely a config mismatch): {unexpected[:5]}..."
+        )
+    if missing:
+        # Only the frozen CLIP weights should be missing. Warn if it's more.
+        non_clip_missing = [k for k in missing if "clip." not in k]
+        if non_clip_missing:
+            print(f"  WARNING: non-CLIP keys missing from checkpoint: {non_clip_missing}")
     model.to(device)
     model.eval()
     return model

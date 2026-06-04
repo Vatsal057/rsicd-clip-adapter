@@ -1,5 +1,9 @@
 # Colab T4 Runbook — RSICD Adapter-CLIP
 
+> **Recommendation: use Kaggle instead.** See `KAGGLE_RUNBOOK.md` for the primary runbook — 30 free GPU-hours/week with P100, no idle disconnects, and the 12 h session limit is a perfect fit for our 3-session training plan.
+>
+> This Colab runbook is kept as a fallback for users who don't want to use Kaggle.
+
 > Read this top to bottom before starting. Total T4 time: ~30 hours.
 > Free Colab tier: 12-hour session limit + cooldown. **Plan for 3 sessions** (or get Colab Pro for one 24-hour block).
 
