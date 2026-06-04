@@ -221,7 +221,16 @@ def train(config_path: str = "configs/adapter_base.yaml",
     print("\n" + "=" * 60)
     print("Loading best checkpoint for final test evaluation...")
     ckpt = torch.load(best_ckpt_path, map_location=device, weights_only=False)
-    model.load_state_dict(ckpt["model_state_dict"])
+    # Lite checkpoint contains only trainable params (adapters + logit_scale).
+    # The frozen CLIP weights never change during training, so strict=False is
+    # correct here — the missing keys are the frozen weights, which keep their
+    # pretrained values from model construction.
+    missing, unexpected = model.load_state_dict(ckpt["model_state_dict"], strict=False)
+    if unexpected:
+        print(f"  WARN: {len(unexpected)} unexpected keys in checkpoint (ignored)")
+    n_missing_frozen = sum(1 for k in missing if k.startswith("clip."))
+    if n_missing_frozen:
+        print(f"  Note: {n_missing_frozen} frozen CLIP keys not in checkpoint (kept pretrained values, as expected)")
     test_results = evaluate_model(
         model, test_retrieval, device, split_name="test",
         image_batch_size  = cfg["eval"]["image_batch_size"],
