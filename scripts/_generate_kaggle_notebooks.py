@@ -72,12 +72,18 @@ def shared_setup_cells(session_label):
                 f"Cell 2 will auto-detect which option you used and report back."),
         cell_code(
             "# === Install + clone + env ===\n"
+            "# IMPORTANT: always cd to /kaggle/working (an absolute path) before\n"
+            "# cloning, so re-running this cell doesn't nest rsicd-clip-adapter\n"
+            "# inside itself.\n"
+            "%cd /kaggle/working\n"
+            "!rm -rf rsicd-clip-adapter\n"
             "!pip install open_clip_torch faiss-cpu ftfy accelerate pyyaml -q\n"
             "!git clone https://github.com/Vatsal057/rsicd-clip-adapter.git\n"
-            "%cd rsicd-clip-adapter\n"
+            "%cd /kaggle/working/rsicd-clip-adapter\n"
             "import os\n"
             "os.environ[\"KMP_DUPLICATE_LIB_OK\"] = \"TRUE\"\n"
-            "print(\"Repo cloned, deps installed.\")"
+            "print(\"Repo cloned, deps installed.\")\n"
+            "print(f\"CWD: {os.getcwd()}\")"
         ),
         cell_code(
             "# === Sanity: GPU + dataset location ===\n"
