@@ -329,12 +329,12 @@ def build_s3(prev_dataset="rsicd-adapter-s2"):
     ])
 
 
-def build_s4(prev_dataset="rsicd-adapter-s3"):
-    """Session 4: Full fine-tune baseline. Restores the adapter from s3 only to inherit the
+def build_s4(prev_dataset="rsicd-adapter-final"):
+    """Session 4: Full fine-tune baseline. Restores the adapter from prev_dataset only to inherit the
     training-history/structure. Trains a separate, full-fine-tuned CLIP."""
-    return notebook(shared_setup_cells("4 of 5 — Full fine-tune baseline") + [
+    return notebook(shared_setup_cells("Session 2 — Full fine-tune baseline") + [
         cell_md("## Required: attach the previous session's Dataset\n"
-                "Click **+ Add data** → search `rsicd-adapter-s3` → **Add** (we use its environment "
+                f"Click **+ Add data** → search `{prev_dataset}` → **Add** (we use its environment "
                 "but the full FT script is independent)."),
         cell_restore_checkpoint(prev_dataset),
         cell_full_finetune(),
@@ -354,14 +354,14 @@ def build_s4(prev_dataset="rsicd-adapter-s3"):
     ])
 
 
-def build_s5(prev_adapter="rsicd-adapter-s3", prev_fullft="rsicd-fullfinetune"):
-    """Session 5: Ablations + figures. Longest session (~22h), but ablations are independent so
+def build_s5(prev_adapter="rsicd-adapter-final", prev_fullft="rsicd-fullfinetune"):
+    """Session 5: Ablations + figures. Longest session (~80 min), but ablations are independent so
     you can split into 2-3 sessions if needed."""
-    return notebook(shared_setup_cells("5 of 5 — Ablations + Figures") + [
+    return notebook(shared_setup_cells("Session 3 — Ablations + Figures") + [
         cell_md("## Required: attach the previous sessions' Datasets\n"
                 "Click **+ Add data** → search and add:\n"
-                f"- `rsicd-adapter-s3` (for the adapter checkpoint used by figures)\n"
-                f"- `rsicd-fullfinetune` (for the full-fine-tune metrics used by figures)"),
+                f"- `{prev_adapter}` (for the adapter checkpoint used by figures)\n"
+                f"- `{prev_fullft}` (for the full-fine-tune metrics used by figures)"),
         cell_restore_checkpoint(prev_adapter),
         cell_md("If you want to split this session, run cells one at a time. Each ablation writes "
                 "its own JSON when it finishes, so a mid-run disconnect loses at most one ablation."),
